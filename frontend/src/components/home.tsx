@@ -5,7 +5,10 @@ export default function Home() {
     const [email, setEmail] = useState('');
 
     async function handleChat() {
-        window.location.href = `/chat?email=${encodeURIComponent(email)}`;
+        if (email.trim() === '')
+            alert('Please enter a valid email ID');
+        else
+            window.location.href = `/chat?email=${encodeURIComponent(email)}`;
     }
      
     

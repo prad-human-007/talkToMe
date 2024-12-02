@@ -1,10 +1,22 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 export default function Chat() {
 
     const [messages, setMessages] = useState<{ sender: string, text: string }[]>([]);
     const [input, setInput] = useState('');
     const [username, setUsername] = useState('');
+    const [searchParams] = useSearchParams();
+
+    useEffect(() => {
+        const email = searchParams.get('email');
+        if (email) setUsername(email);
+        else {
+            alert('Please enter a valid email ID');
+            window.location.href = '/';
+        }
+    }, [searchParams]);
+
 
     const sendMessage = async () => {
         if (input.trim() === '') return;
@@ -25,9 +37,16 @@ export default function Chat() {
         // const msg = "Dummy message";
         const aiMessage = { sender: 'ai', text: msg };
         setMessages([...messages, newMessage, aiMessage]);
-        
-        
+    
     };
+
+    const handleKeyDown = (e: any) => {
+        if (e.key === 'Enter') {
+            e.preventDefault(); // Prevents the default behavior (e.g., submitting a form)
+            sendMessage();
+        }
+    };
+
 
     return (
 
@@ -44,6 +63,7 @@ export default function Chat() {
                     type="text"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
                     style={{ flex: 1, marginRight: '10px', padding: '10px' }}
                 />
                 <button onClick={sendMessage} style={{ padding: '10px 20px' }}>Send</button>
