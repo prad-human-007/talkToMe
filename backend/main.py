@@ -2,9 +2,11 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import OpenAI
+from cerebras.cloud.sdk import Cerebras
 from dotenv import load_dotenv
 import os
 import uuid
+import time
 load_dotenv()
 
 
@@ -12,8 +14,8 @@ load_dotenv()
 # api_key = os.getenv("API_KEY")
 
 app = FastAPI()
-client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
-
+client = OpenAI( api_key=os.environ.get('OPENAI_API_KEY') )
+cerebras_client = Cerebras( api_key=os.environ.get("CEREBRAS_API_KEY") )
 origins = ["*"]
 
 app.add_middleware(
@@ -81,15 +83,31 @@ async def get_reply(request: MessageRequest):
     username = request.username
     print(f"User Email {username}")
     
-    stream = client.chat.completions.create(
-        model="gpt-4o-mini",
+    # stream = client.chat.completions.create (
+    #     model="gpt-4o-mini",
+    #     messages=[
+    #         {"role": "system", "content": "You are a Chef Trainer."},
+    #         {"role": "user", "content": user_message},
+    #     ],
+    #     # stream=True
+    # )
+    # reply = stream.choices[0].message.content
+
+    start_time = time.time()
+
+    chat_completion = cerebras_client.chat.completions.create (
         messages=[
-            {"role": "system", "content": "You are a Chef Trainer."},
-            {"role": "user", "content": user_message},
+            { "role": "system", "content": "Always answer concise. You are an english teacher" },
+            { "role": "user", "content": "Can you teach me english " }
         ],
-        # stream=True
+        model="llama3.1-8b",
     )
-    reply = stream.choices[0].message.content
+
+    end_time = time.time()
+    elapsed_time = end_time - start_time
+    print(f"Time taken for chat completion: {elapsed_time} seconds")
+
+    reply = chat_completion.choices[0].message.content
   
     print(f"User Message: {user_message} \n Reply: {reply}")
     return {"reply": reply}

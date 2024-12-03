@@ -2,3 +2,4 @@ python-dotenv
 fastapi
 openai
 uvicorn
+cerebras_cloud_sdk
