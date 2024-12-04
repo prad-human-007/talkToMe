@@ -10,6 +10,7 @@ import time
 load_dotenv()
 
 
+
 # Example of accessing an environment variable
 # api_key = os.getenv("API_KEY")
 
@@ -82,16 +83,6 @@ async def get_reply(request: MessageRequest):
     user_message = request.message
     username = request.username
     print(f"User Email {username}")
-    
-    # stream = client.chat.completions.create (
-    #     model="gpt-4o-mini",
-    #     messages=[
-    #         {"role": "system", "content": "You are a Chef Trainer."},
-    #         {"role": "user", "content": user_message},
-    #     ],
-    #     # stream=True
-    # )
-    # reply = stream.choices[0].message.content
 
     start_time = time.time()
 
