@@ -7,12 +7,13 @@ const supabase = createClient('https://xjetihhskbeawbqedwqh.supabase.co', 'eyJhb
 
 export default function Supa() {
   const [session, setSession] = useState<Session | null>(null)
+  const [ data, setData ] = useState<any[] | null>()
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session },  }) => {
         setSession(session)
     })
-    
+
     const { data: { subscription }, } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       console.log(session)
@@ -22,15 +23,36 @@ export default function Supa() {
     return () => subscription.unsubscribe()
   }, [])
 
+  const getData = async () => {
+    const { data, error } = await supabase.from('chats').select('chat_title')
+    console.log(error)
+    console.log(data)
+    if (data) {
+        setData((prevData) => (prevData ? [...prevData, ...data] : data))
+    }
+  }
+
   if (!session) {
     return (
         <div className='flex flex-row items-center justify-center h-screen items '>
             <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} />
-        
         </div> 
     )
   }
+
   else {
-    return (<div>Logged in!</div>)
+    return (
+        <>
+            <div>Logged in!</div>
+            <button onClick={getData}>Get Data</button>
+            {data && (
+                <ul>
+                    {data.map((item, index) => (
+                        <li key={index}>{item.chat_title}</li>
+                    ))}
+                </ul>
+            )}
+        </>
+    )
   }
 }
