@@ -7,6 +7,10 @@ export default function Chat() {
     const [input, setInput] = useState('');
     const [username, setUsername] = useState('');
     const [searchParams] = useSearchParams();
+    
+    useEffect(() => {
+        console.log("Runs for the first time")
+    }, [])
 
     useEffect(() => {
         const email = searchParams.get('email');
@@ -51,6 +55,9 @@ export default function Chat() {
     return (
 
         <div className='flex flex-col w-full h-screen gap-3 p-4 py-5 px-20'>
+            <div className='flex flex-row justify-center'>
+                <h1>{username}</h1>
+            </div>
             <div style={{ flex: 1, overflowY: 'auto', padding: '10px', border: '1px solid #ccc' }}>
                 {messages.map((msg, index) => (
                     <div key={index} style={{ margin: '10px 0' }}>
