@@ -5,10 +5,7 @@ export default function Home() {
     const [email, setEmail] = useState('');
 
     async function handleChat() {
-        if (email.trim() === '')
-            alert('Please enter a valid email ID');
-        else
-            window.location.href = `/chat?email=${encodeURIComponent(email)}`;
+        window.location.href = `/chat`;
     }
      
     
@@ -23,13 +20,6 @@ export default function Home() {
               <h1> Welcome to the your AI Personal Trainer</h1>
               <h2> You can ask ANYthing!... and I mean <em>ANYTHING</em></h2>
             </div>
-            <input 
-                type="text" 
-                placeholder="Enter Email ID" 
-                className="p-3 rounded"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-            />
             <button onClick={handleChat}>Chat with Gym Trainer</button>
           </div>
         </div>

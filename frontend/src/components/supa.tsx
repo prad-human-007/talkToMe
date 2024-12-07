@@ -2,19 +2,22 @@ import { useState, useEffect } from 'react'
 import { createClient, Session } from '@supabase/supabase-js'
 import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
+import { supabaseClient } from '../supabaseClient'
 
-const supabase = createClient('https://xjetihhskbeawbqedwqh.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhqZXRpaGhza2JlYXdicWVkd3FoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzMzMTkzNDIsImV4cCI6MjA0ODg5NTM0Mn0.q9uJEfMVNIDIQ6-wBylqcVshyZetgiCqAJeauUZsMjA')
+
 
 export default function Supa() {
   const [session, setSession] = useState<Session | null>(null)
-  const [ data, setData ] = useState<any[] | null>()
+  const [chats, setChats] = useState<any[] | null>(null)
+  const [messages, setMessages] = useState<any[] | null>(null)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session },  }) => {
+    console.log('Running UseEffect on mount')
+    supabaseClient.auth.getSession().then(({ data: { session },  }) => {
         setSession(session)
     })
 
-    const { data: { subscription }, } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription }, } = supabaseClient.auth.onAuthStateChange((_event, session) => {
       setSession(session)
       console.log(session)
       console.log('Event:', _event)
@@ -23,19 +26,27 @@ export default function Supa() {
     return () => subscription.unsubscribe()
   }, [])
 
-  const getData = async () => {
-    const { data, error } = await supabase.from('chats').select('chat_title')
+  const getChats= async () => {
+    const { data, error } = await supabaseClient.from('chats').select('id, chat_title')
     console.log(error)
     console.log(data)
     if (data) {
-        setData((prevData) => (prevData ? [...prevData, ...data] : data))
+        setChats((prevData) => (prevData ? [...prevData, ...data] : data))
     }
+  }
+
+  async function getMessages(chat_id: any) {
+    const {data, error} = await supabaseClient.from('messages').select('*').eq('chat_id', chat_id)
+    if(data) {
+        setMessages(data)
+    }
+    console.log(data)
   }
 
   if (!session) {
     return (
         <div className='flex flex-row items-center justify-center h-screen items '>
-            <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} />
+            <Auth supabaseClient={supabaseClient} appearance={{ theme: ThemeSupa }} />
         </div> 
     )
   }
@@ -44,14 +55,26 @@ export default function Supa() {
     return (
         <>
             <div>Logged in!</div>
-            <button onClick={getData}>Get Data</button>
-            {data && (
-                <ul>
-                    {data.map((item, index) => (
-                        <li key={index}>{item.chat_title}</li>
-                    ))}
-                </ul>
-            )}
+            <div className='flex flex-col gap-3'>
+                <button onClick={getChats}>Get Chats</button>
+                {chats && (
+                    <ul>
+                        {chats.map((item, index) => (
+                            <li key={index} onClick={() => getMessages(item.id)}>{item.chat_title}</li>
+                        ))}
+                    </ul>
+                )}
+                <h2> Messages </h2>
+                {/* <button onClick={getMessages}>Get Messages</button> */}
+                {messages && (
+                    <ul>
+                        {messages.map((item, index)=> (
+                            <li key={index} >{item.role}: {item.content}</li>
+                        ))}
+                    </ul>
+                )}
+            </div>
+            
         </>
     )
   }
