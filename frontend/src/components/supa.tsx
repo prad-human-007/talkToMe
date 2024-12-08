@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { createClient, Session } from '@supabase/supabase-js'
+import { Button } from './ui/button'
 import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
 import { supabaseClient } from '../supabaseClient'
@@ -56,7 +57,7 @@ export default function Supa() {
         <>
             <div>Logged in!</div>
             <div className='flex flex-col gap-3'>
-                <button onClick={getChats}>Get Chats</button>
+                <Button onClick={getChats}>Get Chats</Button>
                 {chats && (
                     <ul>
                         {chats.map((item, index) => (

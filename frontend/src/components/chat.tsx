@@ -1,10 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
 import { useSearchParams } from 'react-router-dom';
 import { supabaseClient } from '../supabaseClient';
 import { Session } from '@supabase/supabase-js';
 import { Auth } from '@supabase/auth-ui-react';
-
-
+import { AppSidebar } from './app-sidebar';
+import { SidebarTrigger } from './ui/sidebar';
+import { ModeToggle } from './mode-toggle';
 export default function Chat() {
 
     const [messages, setMessages] = useState<{ sender: string, text: string }[]>([]);
@@ -17,7 +20,10 @@ export default function Chat() {
             supabaseClient.auth.getSession()
             .then(({ data: { session }}) => {
                 console.log(' setSession:', session)
-                if(session) setSession(session)
+                if(session) {
+                    setSession(session)
+                    setUsername(session.user?.email || '')
+                }
                 
             })
 
@@ -70,28 +76,40 @@ export default function Chat() {
     }
     else {
         return (
-            <div className='flex flex-col w-full h-screen gap-3 p-4 py-5 px-20'>
-                <div className='flex flex-row justify-center'>
-                    <h1>{username}</h1>
-                </div>
-                <div style={{ flex: 1, overflowY: 'auto', padding: '10px', border: '1px solid #ccc' }}>
-                    {messages.map((msg, index) => (
-                        <div key={index} style={{ margin: '10px 0' }}>
-                            <strong>{msg.sender}:</strong> {msg.text}
+            <>
+                <AppSidebar />
+                <div className='flex flex-col w-full h-screen p-4 gap-5'>
+                    <div className='flex flex-row gap-5 px-3'>
+                        <SidebarTrigger />
+                        <p>{username}</p>
+                        <ModeToggle />
+                    </div>
+                    <div className='flex flex-row flex-grow'>
+                        <div className='flex flex-col'>
+                            
                         </div>
-                    ))}
+                        <div className='flex flex-col flex-grow gap-3'>
+                            <div style={{ flex: 1, overflowY: 'auto', padding: '10px', border: '1px solid #ccc' }}>
+                                {messages.map((msg, index) => (
+                                    <div key={index} style={{ margin: '10px 0' }}>
+                                        <strong>{msg.sender}:</strong> {msg.text}
+                                    </div>
+                                ))}
+                            </div>
+                            <div style={{ display: 'flex', padding: '10px' }}>
+                                <Input
+                                    type="text"
+                                    value={input}
+                                    onChange={(e) => setInput(e.target.value)}
+                                    onKeyDown={handleKeyDown}
+                                    style={{ flex: 1, marginRight: '10px', padding: '10px' }}
+                                />
+                                <Button onClick={sendMessage} style={{ padding: '10px 20px' }}>Send</Button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div style={{ display: 'flex', padding: '10px' }}>
-                    <input
-                        type="text"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        style={{ flex: 1, marginRight: '10px', padding: '10px' }}
-                    />
-                    <button onClick={sendMessage} style={{ padding: '10px 20px' }}>Send</button>
-                </div>
-            </div>
+            </>
         );
     }
     
