@@ -4,6 +4,8 @@ import './index.css'
 import App from './App.tsx'
 import { SidebarProvider } from './components/ui/sidebar.tsx'
 import { ThemeProvider } from './components/theme-provode.tsx'
+import Cookies from "js-cookie";
+
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

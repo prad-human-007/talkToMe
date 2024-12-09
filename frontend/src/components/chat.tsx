@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { useSearchParams } from 'react-router-dom';
@@ -8,6 +8,7 @@ import { Auth } from '@supabase/auth-ui-react';
 import { AppSidebar } from './app-sidebar';
 import { SidebarTrigger } from './ui/sidebar';
 import { ModeToggle } from './mode-toggle';
+
 export default function Chat() {
 
     const [messages, setMessages] = useState<{ sender: string, text: string }[]>([]);
@@ -35,8 +36,6 @@ export default function Chat() {
 
             return () => subscription.unsubscribe();
     }, [])
-
-
 
     const sendMessage = async () => {
         if (input.trim() === '') return;

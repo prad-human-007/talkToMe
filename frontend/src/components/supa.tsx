@@ -54,9 +54,9 @@ export default function Supa() {
 
   else {
     return (
-        <>
-            <div>Logged in!</div>
+        <>  
             <div className='flex flex-col gap-3'>
+                <div>Logged in!</div>
                 <Button onClick={getChats}>Get Chats</Button>
                 {chats && (
                     <ul>
