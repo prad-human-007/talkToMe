@@ -8,6 +8,7 @@ import { Auth } from '@supabase/auth-ui-react';
 import { AppSidebar } from './app-sidebar';
 import { SidebarTrigger } from './ui/sidebar';
 import { ModeToggle } from './mode-toggle';
+import { Textarea } from './ui/textarea';
 import { Calendar, Home, Inbox, Search, Settings } from "lucide-react"
 
 export default function Chat() {
@@ -18,7 +19,20 @@ export default function Chat() {
     const [searchParams] = useSearchParams();
     const [session, setSession] = useState<Session | null>(null)
     const [chats, setChats] = useState<any[] | null>([])
-    
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setInput(e.target.value);
+
+        // Auto resize the textarea height
+        if (textareaRef.current) {
+            textareaRef.current.style.height = "auto"; // Reset height
+            const scrollHeight = textareaRef.current.scrollHeight;
+            const maxHeight = 6 * parseFloat(getComputedStyle(textareaRef.current).lineHeight!); // Max height for 4 rows
+            textareaRef.current.style.height = `${Math.min(scrollHeight, maxHeight)}px`; // Adjust height with max limit
+        }
+    };
+
     useEffect(() => {
         supabaseClient.auth.getSession()
         .then(({ data: { session }}) => {
@@ -79,7 +93,7 @@ export default function Chat() {
     };
 
     const handleKeyDown = (e: any) => {
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault(); // Prevents the default behavior (e.g., submitting a form)
             sendMessage();
         }
@@ -114,10 +128,11 @@ export default function Chat() {
                                 ))}
                             </div>
                             <div style={{ display: 'flex', padding: '10px' }}>
-                                <Input
-                                    type="text"
+                                <Textarea
+                                    // type="text"
+                                    ref={textareaRef}
                                     value={input}
-                                    onChange={(e) => setInput(e.target.value)}
+                                    onChange={handleInputChange}
                                     onKeyDown={handleKeyDown}
                                     style={{ flex: 1, marginRight: '10px', padding: '10px' }}
                                 />

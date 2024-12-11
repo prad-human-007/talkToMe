@@ -43,7 +43,7 @@ export function AppSidebar(props: {chats : any, handleClick: any, username: stri
         <SidebarFooter>
             <SidebarMenu>
                 <SidebarMenuItem>
-                    <SidebarMenuButton  >
+                    <SidebarMenuButton>
                         <User2 /> {props.username}
                     </SidebarMenuButton>
                 </SidebarMenuItem>
