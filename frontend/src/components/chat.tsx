@@ -120,23 +120,25 @@ export default function Chat() {
                             
                         </div>
                         <div className='flex flex-col flex-grow gap-3'>
-                            <div style={{ flex: 1, overflowY: 'auto', padding: '10px', border: '1px solid #ccc' }}>
+                            <div className="flex-1 overflow-y-auto p-2 border border-gray-300 rounded-lg">
                                 {messages.map((msg, index) => (
-                                    <div key={index} style={{ margin: '10px 0' }}>
-                                        <strong>{msg.sender}:</strong> {msg.text}
+                                    <div key={index} className="p-2">
+                                        <span className="font-bold">{msg.sender}: </span> <span className="ml-2">{msg.text}</span>
                                     </div>
                                 ))}
                             </div>
-                            <div style={{ display: 'flex', padding: '10px' }}>
+                            <div className='flex flex-col border border-input rounded-xl p-2'>
                                 <Textarea
                                     // type="text"
                                     ref={textareaRef}
                                     value={input}
                                     onChange={handleInputChange}
                                     onKeyDown={handleKeyDown}
-                                    style={{ flex: 1, marginRight: '10px', padding: '10px' }}
+                                    className='flex p-2'
                                 />
-                                <Button onClick={sendMessage} style={{ padding: '10px 20px' }}>Send</Button>
+                                <div className='flex justify-end'>
+                                    <Button onClick={sendMessage} className='flex p-2 '>Send</Button>
+                                </div>
                             </div>
                         </div>
                     </div>
