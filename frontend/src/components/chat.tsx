@@ -110,14 +110,14 @@ export default function Chat() {
         return (
             <>
                 <AppSidebar chats={chats} handleClick={handleClick} username={username}/>
-                <div className='flex flex-col w-full items-center h-screen p-4 gap-5'>
+                <div className='flex flex-col w-full items-center justify-between h-screen p-4 gap-5'>
                     <div className='flex flex-row w-full gap-5 px-3'>
                         <SidebarTrigger />
                         <ModeToggle />
                     </div>
-                    <div className="flex flex-col w-full max-w-6xl overflow-y-auto items-center">
+                    <div className="flex flex-col flex-grow w-full max-w-6xl overflow-y-auto px-10 py-4">
                         {messages.map((msg, index) => (
-                            <div key={index} className="p-2">
+                            <div key={index} className="flex  p-2">
                                 <span className="font-bold">{msg.sender}: </span> <span className="ml-2">{msg.text}</span>
                             </div>
                         ))}
