@@ -20,6 +20,7 @@ export default function Chat() {
     const [session, setSession] = useState<Session | null>(null)
     const [chats, setChats] = useState<any[] | null>([])
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const messagesEndRef = useRef<HTMLDivElement>(null);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setInput(e.target.value);
@@ -32,6 +33,13 @@ export default function Chat() {
             textareaRef.current.style.height = `${Math.min(scrollHeight, maxHeight)}px`; // Adjust height with max limit
         }
     };
+
+    // Automatically scroll to the bottom when messages change
+    useEffect(() => {
+        if (messagesEndRef.current) {
+            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+        }
+    }, [messages]); // Trigger when the `messages` array updates
 
     useEffect(() => {
         supabaseClient.auth.getSession()
@@ -115,12 +123,14 @@ export default function Chat() {
                         <SidebarTrigger />
                         <ModeToggle />
                     </div>
-                    <div className="flex flex-col flex-grow w-full max-w-6xl overflow-y-auto px-10 py-4">
+                    <div className="flex flex-col flex-grow w-full max-w-6xl overflow-y-auto px-10">
                         {messages.map((msg, index) => (
                             <div key={index} className="flex  p-2">
                                 <span className="font-bold">{msg.sender}: </span> <span className="ml-2">{msg.text}</span>
                             </div>
                         ))}
+                        {/* Ref to ensure scrolling to the bottom */}
+                        <div ref={messagesEndRef} />
                     </div>
                     <div className='flex flex-col border border-input rounded-xl p-2 max-w-3xl w-full'>
                         <Textarea
