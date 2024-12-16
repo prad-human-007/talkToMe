@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import OpenAI
 from cerebras.cloud.sdk import Cerebras
+from typing import List, Dict
 from dotenv import load_dotenv
 import os
 import uuid
@@ -74,8 +75,12 @@ database = {
     }
 }
 
+class MessageItem(BaseModel):
+    sender: str
+    text: str
+
 class MessageRequest(BaseModel):
-    message: str
+    message: List[Dict]
     username: str
 
 @app.post("/getreply")
@@ -83,14 +88,12 @@ async def get_reply(request: MessageRequest):
     user_message = request.message
     username = request.username
     print(f"User Email {username}")
+    print(f"User Message: {user_message} ")
 
     start_time = time.time()
 
     chat_completion = cerebras_client.chat.completions.create (
-        messages=[
-            { "role": "system", "content": "Always answer concise. You are an english teacher" },
-            { "role": "user", "content": "Can you teach me english " }
-        ],
+        messages=user_message,
         model="llama3.1-8b",
     )
 

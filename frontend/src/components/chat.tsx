@@ -13,7 +13,7 @@ import { Calendar, Home, Inbox, Search, Settings } from "lucide-react"
 
 export default function Chat() {
 
-    const [messages, setMessages] = useState<{ sender: string, text: string }[]>([]);
+    const [messages, setMessages] = useState<{ role: string, content: string }[]>([]);
     const [input, setInput] = useState('');
     const [username, setUsername] = useState('');
     const [searchParams] = useSearchParams();
@@ -63,7 +63,7 @@ export default function Chat() {
         return () => subscription.unsubscribe();
     }, [])
 
-    const getChats= async () => {
+    const getChats = async () => {
         console.log('in getChats')
         const { data, error } = await supabaseClient.from('chats').select('id, chat_title')
         console.log(error)
@@ -73,15 +73,35 @@ export default function Chat() {
         }
     }
 
+    const getMessages = async (chatID:any) => {
+        console.log('in getMessages')
+        const { data, error } = await supabaseClient.from('messages').select('*').eq('chat_id', chatID)
+        if(data) {
+            // console.log("", data)
+            const chats: any = []
+            data.map(data => {
+                console.log("Chat Messages: ", data.role, data.content)
+                const newMessage = { role: data.role, content: data.content };
+                chats.push(newMessage)
+            })
+            setMessages(chats)
+        }
+        else
+            console.log("Error when getting Messages: ", error)
+
+    }
+
     function handleClick(chatID: any) {
         console.log('Chat ID in handleClick:', chatID)
+        getMessages(chatID)
+
     }
    
 
     const sendMessage = async () => {
         if (input.trim() === '') return;
 
-        const newMessage = { sender: 'user', text: input };
+        const newMessage = { role: 'user', content: input };
         setMessages([...messages, newMessage]);
         setInput('');
         const response = await fetch('http://localhost:8000/getreply', {
@@ -89,13 +109,13 @@ export default function Chat() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ message: input, username }),
+            body: JSON.stringify({ message: [...messages, newMessage], username }),
         });
 
         const data = await response.json();
         const msg = data.reply;
         // const msg = "Dummy message";
-        const aiMessage = { sender: 'ai', text: msg };
+        const aiMessage = { role: 'assistant', content: msg };
         setMessages([...messages, newMessage, aiMessage]);
     
     };
@@ -125,9 +145,9 @@ export default function Chat() {
                     </div>
                     <div className="flex flex-col h-full w-full max-w-3xl overflow-y-auto gap-2">
                         {messages.map((msg, index) => (
-                            <div key={index} className={`flex p-1 mr-2 max-w-3xl ${(msg.sender === "user") ? "justify-end" : "justify-start"}`}>
-                                {/* <span className="font-bold">{msg.sender}: </span>  */}
-                                <p className="break-words border border-input rounded-md max-w-2xl p-1 px-2">{msg.text}</p>
+                            <div key={index} className={`flex p-1 mr-2 max-w-3xl ${(msg.role === "user") ? "justify-end" : "justify-start"}`}>
+                                {/* <span className="font-bold">{msg.role}: </span>  */}
+                                <p className="break-words border border-input rounded-md max-w-2xl p-1 px-2">{msg.content}</p>
                             </div>
                         ))}
                         {/* Ref to ensure scrolling to the bottom */}
