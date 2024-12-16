@@ -123,10 +123,11 @@ export default function Chat() {
                         <SidebarTrigger />
                         <ModeToggle />
                     </div>
-                    <div className="flex flex-col flex-grow w-full max-w-6xl overflow-y-auto px-10">
+                    <div className="flex flex-col h-full w-full max-w-3xl overflow-y-auto gap-2">
                         {messages.map((msg, index) => (
-                            <div key={index} className="flex  p-2">
-                                <span className="font-bold">{msg.sender}: </span> <span className="ml-2">{msg.text}</span>
+                            <div key={index} className={`flex p-1 mr-2 max-w-3xl ${(msg.sender === "user") ? "justify-end" : "justify-start"}`}>
+                                {/* <span className="font-bold">{msg.sender}: </span>  */}
+                                <p className="break-words border border-input rounded-md max-w-2xl p-1 px-2">{msg.text}</p>
                             </div>
                         ))}
                         {/* Ref to ensure scrolling to the bottom */}
@@ -134,11 +135,12 @@ export default function Chat() {
                     </div>
                     <div className='flex flex-col border border-input rounded-xl p-2 max-w-3xl w-full'>
                         <Textarea
+                            rows={1}
                             ref={textareaRef}
                             value={input}
                             onChange={handleInputChange}
                             onKeyDown={handleKeyDown}
-                            className='flex p-2'
+                            
                         />
                         <div className='flex justify-end'>
                             <Button onClick={sendMessage} className='flex p-2 '>Send</Button>

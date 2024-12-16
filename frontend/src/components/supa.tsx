@@ -55,7 +55,7 @@ export default function Supa() {
   else {
     return (
         <>  
-            <div className='flex flex-col gap-3'>
+            <div className='flex flex-col max-w-3xl gap-3'>
                 <div>Logged in!</div>
                 <Button onClick={getChats}>Get Chats</Button>
                 {chats && (
@@ -74,6 +74,8 @@ export default function Supa() {
                         ))}
                     </ul>
                 )}
+                <p className='w-full break-words'>
+                </p>
             </div>
             
         </>
