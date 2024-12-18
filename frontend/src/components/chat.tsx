@@ -76,7 +76,7 @@ export default function Chat() {
 
     const getMessages = async () => {
         console.log('in getMessages')
-        const { data, error } = await supabaseClient.from('messages').select('*').eq('chat_id', chatIDRef.current)
+        const { data, error } = await supabaseClient.from('messages').select('*').eq('chat_id', chatIDRef.current).order('created_at')
         if(data) {
             // console.log("", data)
             const chats: any = []
@@ -99,10 +99,17 @@ export default function Chat() {
 
     }
 
+    function newChat() {
+        console.log('Pressed new chat')
+        setMessages([])
+        chatIDRef.current = ''
+    }
+
     const sendMessage = async () => {
         if (input.trim() === '') return;
 
         if(chatIDRef.current === '') {
+            // Create a new chat
             console.log("User Id =", session?.user?.id)
             const { data, error } = await supabaseClient
             .from('chats')
@@ -116,6 +123,8 @@ export default function Chat() {
             else {
                 chatIDRef.current = data[0].id
             }
+
+            getChats()
         }
 
         const newMessage = { role: 'user', content: input };
@@ -168,7 +177,7 @@ export default function Chat() {
     else {
         return (
             <>
-                <AppSidebar chats={chats} handleClick={handleClick} username={username}/>
+                <AppSidebar chats={chats} handleClick={handleClick} username={username} newChat={newChat}/>
                 <div className='flex flex-col w-full items-center justify-between h-screen p-4 gap-5'>
                     <div className='flex flex-row w-full gap-5 px-3'>
                         <SidebarTrigger />

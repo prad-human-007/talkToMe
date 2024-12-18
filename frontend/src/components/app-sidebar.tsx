@@ -18,8 +18,8 @@ import { Button } from "./ui/button"
 // Menu items.
 
 
-export function AppSidebar(props: {chats : any, handleClick: any, username: string}) {
-    console.log('printing props: ', props)
+export function AppSidebar(props: {chats : any, handleClick: any, username: string, newChat: any}) {
+    console.log('Rendering AppSidebar')
     const items = props.chats   
     const handleClick = props.handleClick
 
@@ -29,7 +29,7 @@ export function AppSidebar(props: {chats : any, handleClick: any, username: stri
             <SidebarGroup>
                 <SidebarGroupLabel className="flex flex-row justify-between"> 
                     <h3>All Chats</h3> 
-                    <Button variant="ghost" className="text-lg">+</Button> 
+                    <Button variant="ghost" className="text-lg" onClick={() => {props.newChat()}} >+</Button> 
                 </SidebarGroupLabel>
             <SidebarGroupContent>
                 <SidebarMenu>

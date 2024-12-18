@@ -8,9 +8,9 @@ import { ThemeProvider } from './components/theme-provode.tsx'
 
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
+  // <StrictMode>
     <ThemeProvider>
         <App />
     </ThemeProvider>  
-  </StrictMode>,
+  // </StrictMode>,
 )
