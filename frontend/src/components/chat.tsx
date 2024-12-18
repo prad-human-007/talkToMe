@@ -21,6 +21,7 @@ export default function Chat() {
     const [chats, setChats] = useState<any[] | null>([])
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const chatIDRef = useRef('');
 
     const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setInput(e.target.value);
@@ -73,9 +74,9 @@ export default function Chat() {
         }
     }
 
-    const getMessages = async (chatID:any) => {
+    const getMessages = async () => {
         console.log('in getMessages')
-        const { data, error } = await supabaseClient.from('messages').select('*').eq('chat_id', chatID)
+        const { data, error } = await supabaseClient.from('messages').select('*').eq('chat_id', chatIDRef.current)
         if(data) {
             // console.log("", data)
             const chats: any = []
@@ -91,34 +92,52 @@ export default function Chat() {
 
     }
 
-    function handleClick(chatID: any) {
+    function handleClick(chatID: string) {
         console.log('Chat ID in handleClick:', chatID)
-        getMessages(chatID)
+        chatIDRef.current = chatID
+        getMessages()
 
     }
-   
 
     const sendMessage = async () => {
         if (input.trim() === '') return;
 
-        const newMessage = { role: 'user', content: input };
-        setMessages([...messages, newMessage]);
-        setInput('');
-        const response = await fetch('http://localhost:8000/getreply', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ message: [...messages, newMessage], username }),
-        });
+        if(chatIDRef.current !== '') {
+            const newMessage = { role: 'user', content: input };
+            setMessages([...messages, newMessage]);
+            setInput('');
 
-        const data = await response.json();
-        const msg = data.reply;
-        // const msg = "Dummy message";
-        const aiMessage = { role: 'assistant', content: msg };
-        setMessages([...messages, newMessage, aiMessage]);
-    
+
+            const response = await fetch('http://localhost:8000/getreply', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: [...messages, newMessage], username }),
+            });
+
+            const data = await response.json();
+            const msg = data.reply;
+            // const msg = "Dummy message";
+            const aiMessage = { role: 'assistant', content: msg };
+
+            const { error } = await supabaseClient
+            .from('messages')
+            .insert([
+                { chat_id: chatIDRef.current, role: 'user', content: input },
+                { chat_id: chatIDRef.current, role: 'assistant', content: msg }
+            ])
+            if(error) {
+                console.log('Error inserting message: ', error)
+            }
+            
+            setMessages([...messages, newMessage, aiMessage]);
+        }
+        else {
+            alert('Chat id is null')
+        }
     };
+
 
     const handleKeyDown = (e: any) => {
         if (e.key === 'Enter' && !e.shiftKey) {

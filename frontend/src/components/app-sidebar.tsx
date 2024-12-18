@@ -12,7 +12,8 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 import { DropdownMenu, DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu"
-import { ChevronUp, User2 } from "lucide-react"
+import { ChevronUp, Ghost, User2 } from "lucide-react"
+import { Button } from "./ui/button"
 
 // Menu items.
 
@@ -26,7 +27,10 @@ export function AppSidebar(props: {chats : any, handleClick: any, username: stri
         <Sidebar variant="floating">
         <SidebarContent>
             <SidebarGroup>
-            <SidebarGroupLabel>Application</SidebarGroupLabel>
+                <SidebarGroupLabel className="flex flex-row justify-between"> 
+                    <h3>All Chats</h3> 
+                    <Button variant="ghost" className="text-lg">+</Button> 
+                </SidebarGroupLabel>
             <SidebarGroupContent>
                 <SidebarMenu>
                 {items.map((item: any) => (

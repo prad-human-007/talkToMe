@@ -75,10 +75,6 @@ database = {
     }
 }
 
-class MessageItem(BaseModel):
-    sender: str
-    text: str
-
 class MessageRequest(BaseModel):
     message: List[Dict]
     username: str
