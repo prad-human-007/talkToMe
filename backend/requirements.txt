@@ -4,3 +4,4 @@ openai
 uvicorn
 cerebras_cloud_sdk
 supabase
+pyjwt

@@ -1,12 +1,14 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from openai import OpenAI
 from cerebras.cloud.sdk import Cerebras
 from typing import List, Dict
 from dotenv import load_dotenv
+from supabase import create_client, Client
 import os
 import uuid
+import jwt
 import time
 load_dotenv()
 
@@ -20,6 +22,9 @@ client = OpenAI( api_key=os.environ.get('OPENAI_API_KEY') )
 cerebras_client = Cerebras( api_key=os.environ.get("CEREBRAS_API_KEY") )
 origins = ["*"]
 
+SUPABASE_JWT_SECRET = os.environ.get('SUPABASE_JWT_SECRET')
+supabase_client: Client = create_client(os.environ.get('SUPABASE_URL'), os.environ.get('SUPABASE_KEY'))
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -28,63 +33,56 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+authenticated_users = []
 
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
 
-database = {
-    "prad": {
-        "username": "Prad",
-        "_id": uuid.uuid4().hex,
-        "chats": [
-            {
-                'chatID': "1234",
-                'messages': [
-                    {"role": "system", "content": "You are a Chef Trainer."},
-                    {"role": "user", "content": "user_message"},
-                    {"role": "assisstant", "content": "assisstant_message"},
-                    {"role": "user", "content": "user_message"}
-                ],
-            },
-            {
-                'chatID': "5623",
-                'messages': [
-                    {"role": "system", "content": "You are a Chef Trainer."},
-                    {"role": "user", "content": "user_message"},
-                    {"role": "assisstant", "content": "assisstant_message"},
-                    {"role": "user", "content": "user_message"}
-                ],
-            }
-        ]
-    },
-    "crack": {
-        "username": "crack",
-        "_id": uuid.uuid4().hex,
-        "chats": [
-            {
-                'chatID': "2324",
-                'messages': [
-                    {"role": "system", "content": "You are a Chef Trainer."},
-                    {"role": "user", "content": "user_message"},
-                    {"role": "assisstant", "content": "assisstant_message"},
-                    {"role": "user", "content": "user_message"}
-                ],
-            }
-        ]
-    }
-}
+def decodeJWT(token):
+    try:
+        # print(f"Checking token: {token}")
+        # print(f"SUPABASE_JWT_SECRET: {SUPABASE_JWT_SECRET}")
+        decoded_token = jwt.decode(token, SUPABASE_JWT_SECRET, algorithms=["HS256"], audience="authenticated")
+        return decoded_token
+    except jwt.ExpiredSignatureError:
+        return HTTPException(status_code=401, detail="Signature has expired")
+    except jwt.InvalidTokenError:
+        return HTTPException(status_code=401, detail="Invalid token")
+    
+
+
 
 class MessageRequest(BaseModel):
     message: List[Dict]
     username: str
 
 @app.post("/getreply")
-async def get_reply(request: MessageRequest):
+async def get_reply(
+    request: MessageRequest,
+    authorization: str = Header(None)
+):
+    if not authorization:
+        print("No authorization header")
+        raise HTTPException(status_code=401, detail="Unauthorized Access - No Authorization Header")
+    else:
+        token = authorization.split(" ")[1]
+        user = decodeJWT(token)
+        print(f"User from JWT: {user['sub']}")
+        if(user['sub'] not in authenticated_users):
+            response = supabase_client.table('profiles').select('*').eq('user_id', user['sub']).execute()
+            print(f"Role got from supabase: {response.data[0]['role']}")
+            if(response.data[0]['role'] != 'paid'):
+                print(f"Unauthorized Access - {user['sub']} - Not a paid user")
+                raise HTTPException(status_code=401, detail="Unauthorized Access - Not a paid user")
+            else:
+                authenticated_users.append(user['sub'])
+
+
     user_message = request.message
     username = request.username
-    print(f"User Email {username}")
-    print(f"User Message: {user_message} ")
+    # print(f"User Email {username}")
+    # print(f"User Message: {user_message} ")
 
     start_time = time.time()
 
@@ -99,7 +97,7 @@ async def get_reply(request: MessageRequest):
 
     reply = chat_completion.choices[0].message.content
   
-    print(f"User Message: {user_message} \n Reply: {reply}")
+    # print(f"User Message: {user_message} \n Reply: {reply}")
     return {"reply": reply}
 
 @app.get("/getreply")

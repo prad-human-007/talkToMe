@@ -50,9 +50,11 @@ export default function Chat() {
                 setSession(session)
                 setUsername(session.user?.email || '')
             }
-            
+            else {
+                window.location.href = '/auth'
+            }
         })
-
+        
         const { data: { subscription }} = supabaseClient.auth.onAuthStateChange((_event, session) => {
             console.log('onAuthStateChange: Event: ', _event)
             console.log('onAuthStateChange: Session: ', session)
@@ -89,7 +91,6 @@ export default function Chat() {
         }
         else
             console.log("Error when getting Messages: ", error)
-
     }
 
     function handleClick(chatID: string) {
@@ -136,9 +137,15 @@ export default function Chat() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${session?.access_token}`
             },
             body: JSON.stringify({ message: [...messages, newMessage], username }),
         });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+
+        }
 
         const data = await response.json();
         const msg = data.reply;
@@ -167,49 +174,41 @@ export default function Chat() {
         }
     };
 
-    if (!session) {
-        return (
-            <>
-             <Auth supabaseClient={supabaseClient} />
-            </>
-        )
-    }
-    else {
-        return (
-            <>
-                <AppSidebar chats={chats} handleClick={handleClick} username={username} newChat={newChat}/>
-                <div className='flex flex-col w-full items-center justify-between h-screen p-4 gap-5'>
-                    <div className='flex flex-row w-full gap-5 px-3'>
-                        <SidebarTrigger />
-                        <ModeToggle />
-                    </div>
-                    <div className="flex flex-col h-full w-full max-w-3xl overflow-y-auto gap-2">
-                        {messages.map((msg, index) => (
-                            <div key={index} className={`flex p-1 mr-2 max-w-3xl ${(msg.role === "user") ? "justify-end" : "justify-start"}`}>
-                                {/* <span className="font-bold">{msg.role}: </span>  */}
-                                <p className="break-words border border-input rounded-md max-w-2xl p-1 px-2">{msg.content}</p>
-                            </div>
-                        ))}
-                        {/* Ref to ensure scrolling to the bottom */}
-                        <div ref={messagesEndRef} />
-                    </div>
-                    <div className='flex flex-col border border-input rounded-xl p-2 max-w-3xl w-full'>
-                        <Textarea
-                            rows={1}
-                            ref={textareaRef}
-                            value={input}
-                            onChange={handleInputChange}
-                            onKeyDown={handleKeyDown}
-                            
-                        />
-                        <div className='flex justify-end'>
-                            <Button onClick={sendMessage} className='flex p-2 '>Send</Button>
+   
+    return (
+        <>
+            <AppSidebar chats={chats} handleClick={handleClick} username={username} newChat={newChat}/>
+            <div className='flex flex-col w-full items-center justify-between h-screen p-4 gap-5'>
+                <div className='flex flex-row w-full gap-5 px-3'>
+                    <SidebarTrigger />
+                    <ModeToggle />
+                </div>
+                <div className="flex flex-col h-full w-full max-w-3xl overflow-y-auto gap-2">
+                    {messages.map((msg, index) => (
+                        <div key={index} className={`flex p-1 mr-2 max-w-3xl ${(msg.role === "user") ? "justify-end" : "justify-start"}`}>
+                            {/* <span className="font-bold">{msg.role}: </span>  */}
+                            <p className="break-words border border-input rounded-md max-w-2xl p-1 px-2">{msg.content}</p>
                         </div>
+                    ))}
+                    {/* Ref to ensure scrolling to the bottom */}
+                    <div ref={messagesEndRef} />
+                </div>
+                <div className='flex flex-col border border-input rounded-xl p-2 max-w-3xl w-full'>
+                    <Textarea
+                        rows={1}
+                        ref={textareaRef}
+                        value={input}
+                        onChange={handleInputChange}
+                        onKeyDown={handleKeyDown}
+                        
+                    />
+                    <div className='flex justify-end'>
+                        <Button onClick={sendMessage} className='flex p-2 '>Send</Button>
                     </div>
                 </div>
-            </>
-        );
-    }
+            </div>
+        </>
+    );
     
 
 }
