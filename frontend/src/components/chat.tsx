@@ -47,6 +47,15 @@ export default function Chat() {
         .then(({ data: { session }}) => {
             console.log(' setSession:', session)
             if(session) {
+                supabaseClient.from('user_roles').select('role').eq('user_id', session.user?.id)
+                .then(( {data}) => {
+                    if(data) {
+                        if(data[0].role !== 'paid')  {
+                            alert('Please pay to chat with the Gym Trainer')
+                            window.location.href = '/'
+                        }
+                    }
+                })  
                 setSession(session)
                 setUsername(session.user?.email || '')
             }
@@ -54,6 +63,7 @@ export default function Chat() {
                 window.location.href = '/auth'
             }
         })
+
         
         const { data: { subscription }} = supabaseClient.auth.onAuthStateChange((_event, session) => {
             console.log('onAuthStateChange: Event: ', _event)

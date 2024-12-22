@@ -12,10 +12,10 @@ import jwt
 import time
 load_dotenv()
 
-
-
 # Example of accessing an environment variable
 # api_key = os.getenv("API_KEY")
+
+
 
 app = FastAPI()
 client = OpenAI( api_key=os.environ.get('OPENAI_API_KEY') )
@@ -24,6 +24,13 @@ origins = ["*"]
 
 SUPABASE_JWT_SECRET = os.environ.get('SUPABASE_JWT_SECRET')
 supabase_client: Client = create_client(os.environ.get('SUPABASE_URL'), os.environ.get('SUPABASE_KEY'))
+try:
+    supabase_client.auth.sign_in_with_password(
+        {'email': os.environ.get('SUPABASE_EMAIL'), 'password': os.environ.get('SUPABASE_PASSWORD')}
+    )
+    print("Signed in to supabase")
+except Exception as e:
+    print(f"Error signing in to supabase: {e}")
 
 app.add_middleware(
     CORSMiddleware,
@@ -70,13 +77,14 @@ async def get_reply(
         user = decodeJWT(token)
         print(f"User from JWT: {user['sub']}")
         if(user['sub'] not in authenticated_users):
-            response = supabase_client.table('profiles').select('*').eq('user_id', user['sub']).execute()
-            print(f"Role got from supabase: {response.data[0]['role']}")
-            if(response.data[0]['role'] != 'paid'):
-                print(f"Unauthorized Access - {user['sub']} - Not a paid user")
-                raise HTTPException(status_code=401, detail="Unauthorized Access - Not a paid user")
-            else:
-                authenticated_users.append(user['sub'])
+            response = supabase_client.table('user_roles').select('*').eq('user_id', user['sub']).execute()
+            print(f"Role got from supabase: {response.data}")
+            if(len(response.data) > 0): 
+                if(response.data[0]['role'] != 'paid'):
+                    print(f"Unauthorized Access - {user['sub']} - Not a paid user")
+                    raise HTTPException(status_code=401, detail="Unauthorized Access - Not a paid user")
+                else:
+                    authenticated_users.append(user['sub'])
 
 
     user_message = request.message

@@ -27,20 +27,27 @@ export default function Home() {
     }, [])
 
     async function handleChat() {
-      const {data, error} = await supabaseClient.from('user_roles').select('role').eq('user_id', session?.user?.id)
-      if(data) {
-        console.log(data)
-        if(data[0].role === 'paid') {
-          window.location.href  = '/chat'
+      if(session) {
+        const {data, error} = await supabaseClient.from('user_roles').select('role').eq('user_id', session?.user?.id)
+        if(data) {
+          console.log(data)
+          if(data[0].role === 'paid') {
+            window.location.href  = '/chat'
+          }
+          else {
+            alert('Please pay to chat with the Gym Trainer')
+            // window.location.href = '/payment'
+          }
         }
         else {
-          window.location.href = '/payment'
+          console.log(error)
         }
       }
       else {
-        console.log(error)
+        alert('Please login to chat with the Gym Trainer')
       }
-    }
+      }
+      
     
     return (
       <div className='flex flex-col p-4 w-full h-screen gap-2'>
